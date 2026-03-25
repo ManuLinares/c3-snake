@@ -58,11 +58,11 @@ fn void init_game()
 	g.move_timer = 0;
 	g.grid_occupied = { };
 
-	g.screen_remainder = { (float)(SCREEN_WIDTH % SQUARE_SIZE), (float)(SCREEN_HEIGHT % SQUARE_SIZE) };
+	g.screen_remainder = { SCREEN_WIDTH % SQUARE_SIZE, SCREEN_HEIGHT % SQUARE_SIZE };
 
 	Vec2 center = {
-		(float)(SCREEN_WIDTH / (2 * SQUARE_SIZE)) * SQUARE_SIZE,
-		(float)(SCREEN_HEIGHT / (2 * SQUARE_SIZE)) * SQUARE_SIZE
+		(SCREEN_WIDTH / (2 * SQUARE_SIZE)) * SQUARE_SIZE,
+		(SCREEN_HEIGHT / (2 * SQUARE_SIZE)) * SQUARE_SIZE
 	};
 	g.snake_pos[0] = g.screen_remainder / 2.0f + center;
 	g.fruit_active = false;
@@ -112,9 +112,9 @@ fn void update_game()
 	if (rl::is_key_pressed(F)) rl::toggle_fullscreen();
 	if (g.paused) return;
 
-	if (rl::is_key_pressed(UP) || rl::is_key_pressed(W)) queue_move(UP);
-	if (rl::is_key_pressed(DOWN) || rl::is_key_pressed(S)) queue_move(DOWN);
-	if (rl::is_key_pressed(LEFT) || rl::is_key_pressed(A)) queue_move(LEFT);
+	if (rl::is_key_pressed(UP)    || rl::is_key_pressed(W)) queue_move(UP);
+	if (rl::is_key_pressed(DOWN)  || rl::is_key_pressed(S)) queue_move(DOWN);
+	if (rl::is_key_pressed(LEFT)  || rl::is_key_pressed(A)) queue_move(LEFT);
 	if (rl::is_key_pressed(RIGHT) || rl::is_key_pressed(D)) queue_move(RIGHT);
 
 	g.move_timer += math::min(rl::get_frame_time(), MAX_FRAME_DELTA);
@@ -134,7 +134,7 @@ fn void update_game()
 		Vec2 new_head = old_head + g.current_dir.dir;
 
 		Vec2 min_bounds = g.screen_remainder / 2.0f;
-		Vec2 max_bounds = { (float)SCREEN_WIDTH, (float)SCREEN_HEIGHT } - min_bounds;
+		Vec2 max_bounds = { SCREEN_WIDTH, SCREEN_HEIGHT } - min_bounds;
 		if (new_head.comp_lt(min_bounds).or() || new_head.comp_ge(max_bounds).or())
 		{
 			g.game_over = true;
@@ -207,7 +207,7 @@ fn void draw_game()
 		float x = g.screen_remainder.x / 2.0f + (float)i * SQUARE_SIZE;
 		rl::draw_line_v(
 			{ x, g.screen_remainder.y / 2.0f },
-			{ x, (float)SCREEN_HEIGHT - g.screen_remainder.y / 2.0f },
+			{ x, SCREEN_HEIGHT - g.screen_remainder.y / 2.0f },
 			{ 40, 40, 50, 255 }
 		);
 	}
@@ -216,7 +216,7 @@ fn void draw_game()
 		float y = g.screen_remainder.y / 2.0f + (float)i * SQUARE_SIZE;
 		rl::draw_line_v(
 			{ g.screen_remainder.x / 2.0f, y },
-			{ (float)SCREEN_WIDTH - g.screen_remainder.x / 2.0f, y },
+			{ SCREEN_WIDTH - g.screen_remainder.x / 2.0f, y },
 			{ 40, 40, 50, 255 }
 		);
 	}
@@ -260,18 +260,18 @@ fn void update_draw_frame()
 	defer rl::end_drawing();
 	rl::clear_background(rl::BLACK);
 
-	float screen_w = (float)rl::get_render_width();
-	float screen_h = (float)rl::get_render_height();
-	float scale = math::min(screen_w / (float)SCREEN_WIDTH, screen_h / (float)SCREEN_HEIGHT);
+	float screen_w = rl::get_render_width();
+	float screen_h = rl::get_render_height();
+	float scale = math::min(screen_w / SCREEN_WIDTH, screen_h / SCREEN_HEIGHT);
 
 	rl::draw_texture_pro(
 		g.target.texture,
-		{ 0.0f, 0.0f, (float)SCREEN_WIDTH, -(float)SCREEN_HEIGHT },
+		{ 0.0f, 0.0f, SCREEN_WIDTH, -SCREEN_HEIGHT },
 		{
-			(screen_w - (float)SCREEN_WIDTH * scale) / 2.0f,
-			(screen_h - (float)SCREEN_HEIGHT * scale) / 2.0f,
-			(float)SCREEN_WIDTH * scale,
-			(float)SCREEN_HEIGHT * scale
+			(screen_w - SCREEN_WIDTH * scale) / 2.0f,
+			(screen_h - SCREEN_HEIGHT * scale) / 2.0f,
+			SCREEN_WIDTH * scale,
+			SCREEN_HEIGHT * scale
 		},
 		{ 0.0f, 0.0f },
 		0.0f,
@@ -282,13 +282,13 @@ fn void update_draw_frame()
 fn void main()
 {
 	$if !env::WASM:
-		rl::set_config_flags(rl::RLConfigFlag.WINDOW_RESIZABLE);
+		rl::set_config_flags(WINDOW_RESIZABLE);
 	$endif
 	rl::init_window(SCREEN_WIDTH, SCREEN_HEIGHT, "C3 Snake");
 	init_game();
 
 	g.target = rl::load_render_texture(SCREEN_WIDTH, SCREEN_HEIGHT);
-	g.target.texture.set_filter(rl::RLTextureFilter.POINT);
+	g.target.texture.set_filter(POINT);
 
 	$if env::WASM:
 		emscripten_set_main_loop(&update_draw_frame, 0, 1);
