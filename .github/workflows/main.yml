@@ -18,7 +18,7 @@ jobs:
 
       - name: Install C3 Compiler
         run: |
-          curl -L https://github.com/c3lang/c3c/releases/download/latest-prerelease-tag/c3-linux.tar.gz | tar xz
+          curl -L --fail --retry 600 --retry-delay 10 https://github.com/c3lang/c3c/releases/download/latest-prerelease-tag/c3-linux.tar.gz | tar xz
           echo "$(pwd)/c3" >> $GITHUB_PATH
 
       - name: Setup Emscripten (emsdk)

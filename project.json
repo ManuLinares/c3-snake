@@ -23,7 +23,8 @@
 			"target": "wasm32",
 			"link-libc": true,
 			"single-module": true,
-			"cc": "emcc"
+			"cc": "emcc",
+			"link-args": ["-Oz"]
 		}
 	},
 	"opt": "Oz"

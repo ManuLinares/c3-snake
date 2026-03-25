@@ -252,12 +252,12 @@ fn void update_draw_frame()
 fn void main()
 {
 	rl::init_window(SCREEN_WIDTH, SCREEN_HEIGHT, "C3 Snake");
-	rl::set_target_fps(TARGET_FPS);
 	init_game();
 
 	$if env::WASM:
-		emscripten_set_main_loop(&update_draw_frame, TARGET_FPS, 1);
+		emscripten_set_main_loop(&update_draw_frame, 0, 1);
 	$else
+		rl::set_target_fps(TARGET_FPS);
 		while (!rl::window_should_close())
 		{
 			update_draw_frame();
