@@ -68,6 +68,26 @@ fn void init_game()
 	int row = (int)(center.y / SQUARE_SIZE);
 	int col = (int)(center.x / SQUARE_SIZE);
 	g.grid_occupied[row * SCREEN_COLS + col] = true;
+	spawn_fruit();
+}
+
+fn void spawn_fruit()
+{
+	int[SCREEN_COLS * SCREEN_ROWS] empty_cells;
+	int count = 0;
+	for (int i = 0; i < SCREEN_COLS * SCREEN_ROWS; i++)
+	{
+		if (!g.grid_occupied[i]) empty_cells[count++] = i;
+	}
+
+	if (count > 0)
+	{
+		int rand_grid_idx = empty_cells[rl::get_random_value(0, count - 1)];
+		int row = rand_grid_idx / SCREEN_COLS;
+		int col = rand_grid_idx % SCREEN_COLS;
+		g.fruit_pos = g.screen_remainder / 2.0f + (Vec2) { col, row } * SQUARE_SIZE;
+		g.fruit_active = true;
+	}
 }
 
 fn void queue_move(Direction d)
@@ -81,7 +101,7 @@ fn void update_game()
 {
 	if (g.game_over)
 	{
-		if (rl::is_key_pressed(ENTER)) init_game();
+		if (rl::get_key_pressed() != 0) init_game();
 		return;
 	}
 
@@ -152,24 +172,7 @@ fn void update_game()
 		g.grid_occupied[bit_idx] = true;
 	}
 
-	if (!g.fruit_active)
-	{
-		int[SCREEN_COLS * SCREEN_ROWS] empty_cells;
-		int count = 0;
-		for (int i = 0; i < SCREEN_COLS * SCREEN_ROWS; i++)
-		{
-			if (!g.grid_occupied[i]) empty_cells[count++] = i;
-		}
-
-		if (count > 0)
-		{
-			int rand_grid_idx = empty_cells[rl::get_random_value(0, count - 1)];
-			int row = rand_grid_idx / SCREEN_COLS;
-			int col = rand_grid_idx % SCREEN_COLS;
-			g.fruit_pos = g.screen_remainder / 2.0f + (Vec2) { col, row } * SQUARE_SIZE;
-			g.fruit_active = true;
-		}
-	}
+	if (!g.fruit_active) spawn_fruit();
 }
 
 fn void draw_game()
@@ -188,8 +191,8 @@ fn void draw_game()
 			rl::MAROON
 		);
 		rl::draw_text(
-			"PRESS [ENTER] TO RESTART",
-			SCREEN_WIDTH / 2 - rl::measure_text("PRESS [ENTER] TO RESTART", 20) / 2,
+			"PRESS ANY KEY TO RESTART",
+			SCREEN_WIDTH / 2 - rl::measure_text("PRESS ANY KEY TO RESTART", 20) / 2,
 			SCREEN_HEIGHT / 2 + 10,
 			20,
 			rl::RAYWHITE
@@ -216,7 +219,7 @@ fn void draw_game()
 		);
 	}
 
-	rl::draw_rectangle_v(g.fruit_pos, { SQUARE_SIZE, SQUARE_SIZE }, rl::PINK);
+	if (g.fruit_active) rl::draw_rectangle_v(g.fruit_pos, { SQUARE_SIZE, SQUARE_SIZE }, rl::PINK);
 
 	for (int i = 0; i < g.tail_count; i++)
 	{
