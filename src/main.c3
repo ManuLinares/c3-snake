@@ -242,7 +242,7 @@ fn void draw_game()
 
 fn void main()
 {
-	rl::init_window(SCREEN_WIDTH, SCREEN_HEIGHT, "Uber C3 Snake");
+	rl::init_window(SCREEN_WIDTH, SCREEN_HEIGHT, "C3 Snake");
 	rl::set_target_fps(60);
 	init_game();
 	while (!rl::window_should_close())
