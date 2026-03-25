@@ -1,6 +1,6 @@
 # C3 Snake
 
-Snake game written in [C3](https://c3-lang.org) using [Raylib](https://www.raylib.com/).
+Snake game written in [C3](https://c3-lang.org) using [Raylib](https://www.raylib.com/) [(1)](https://github.com/raysan5/raylib/wiki/Working-for-Web-(HTML5)#41-avoid-raylib-whilewindowshouldclose-loop).
 
 <p align="center">
   <a href="https://manulinares.github.io/c3-snake/">

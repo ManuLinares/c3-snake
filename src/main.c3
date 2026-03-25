@@ -2,19 +2,23 @@ module snake;
 import raylib55;
 import std::math;
 
-const int SNAKE_LENGTH  = 256;
-const int SQUARE_SIZE   = 32;
-const int SCREEN_WIDTH  = 800;
-const int SCREEN_HEIGHT = 450;
-const int SCREEN_COLS   = SCREEN_WIDTH / SQUARE_SIZE;
-const int SCREEN_ROWS   = SCREEN_HEIGHT / SQUARE_SIZE;
+const int TARGET_FPS       = 60;
+const int SQUARE_SIZE      = 32;
+const float MOVE_SPEED     = 0.15f;
+const int SCORE_PER_FRUIT  = 100;
+const int SCREEN_WIDTH     = 800;
+const int SCREEN_HEIGHT    = 450;
+const int SCREEN_COLS      = SCREEN_WIDTH / SQUARE_SIZE;
+const int SCREEN_ROWS      = SCREEN_HEIGHT / SQUARE_SIZE;
+const int SNAKE_LENGTH     = SCREEN_COLS * SCREEN_ROWS;
+const int INPUT_QUEUE_SIZE = 2;
 
 GameState g;
 
 struct GameState @align(64)
 {
 	Vec2[SNAKE_LENGTH] snake_pos;
-	Direction[2] input_queue;
+	Direction[INPUT_QUEUE_SIZE] input_queue;
 	Direction current_dir;
 	Vec2 fruit_pos;
 	Vec2 screen_remainder;
@@ -89,7 +93,6 @@ fn void update_game()
 	if (rl::is_key_pressed(LEFT) || rl::is_key_pressed(A)) queue_move(LEFT);
 	if (rl::is_key_pressed(RIGHT) || rl::is_key_pressed(D)) queue_move(RIGHT);
 
-	const float MOVE_SPEED = 0.15f;
 	g.move_timer += rl::get_frame_time();
 
 	if (g.move_timer >= MOVE_SPEED)
@@ -118,13 +121,13 @@ fn void update_game()
 		int new_col = (int)((new_head.x - min_bounds.x) / SQUARE_SIZE);
 		int bit_idx = new_row * SCREEN_COLS + new_col;
 
-		int next_idx = (g.head_idx + 1) & 255;
+		int next_idx = (g.head_idx + 1) % SNAKE_LENGTH;
 
 		bool is_fruit = (new_head == g.fruit_pos);
 
 		if (!is_fruit)
 		{
-			int tail_ring_idx = (g.head_idx - (g.tail_count - 1)) & 255;
+			int tail_ring_idx = (g.head_idx - (g.tail_count - 1) + SNAKE_LENGTH) % SNAKE_LENGTH;
 			Vec2 tail_pos = g.snake_pos[tail_ring_idx];
 			int t_row = (int)((tail_pos.y - min_bounds.y) / SQUARE_SIZE);
 			int t_col = (int)((tail_pos.x - min_bounds.x) / SQUARE_SIZE);
@@ -217,7 +220,7 @@ fn void draw_game()
 
 	for (int i = 0; i < g.tail_count; i++)
 	{
-		int idx = (g.head_idx - i) & 255;
+		int idx = (g.head_idx - i + SNAKE_LENGTH) % SNAKE_LENGTH;
 		Vec2 pos = g.snake_pos[idx];
 		float t = (float)i / g.tail_count;
 		RLColor color = rl::LIME;
@@ -237,18 +240,32 @@ fn void draw_game()
 	}
 
 	if (g.paused) rl::draw_text("PAUSED", SCREEN_WIDTH / 2 - 50, SCREEN_HEIGHT / 2 - 15, 30, rl::GRAY);
-	rl::draw_text(rl::text_format("SCORE: %d", (g.tail_count - 1) * 100), 20, 20, 20, rl::GOLD);
+	rl::draw_text(rl::text_format("SCORE: %d", (g.tail_count - 1) * SCORE_PER_FRUIT), 20, 20, 20, rl::GOLD);
+}
+
+fn void update_draw_frame()
+{
+	update_game();
+	draw_game();
 }
 
 fn void main()
 {
 	rl::init_window(SCREEN_WIDTH, SCREEN_HEIGHT, "C3 Snake");
-	rl::set_target_fps(60);
+	rl::set_target_fps(TARGET_FPS);
 	init_game();
-	while (!rl::window_should_close())
-	{
-		update_game();
-		draw_game();
-	}
+
+	$if env::WASM:
+		emscripten_set_main_loop(&update_draw_frame, TARGET_FPS, 1);
+	$else
+		while (!rl::window_should_close())
+		{
+			update_draw_frame();
+		}
+	$endif
+
 	rl::close_window();
 }
+
+alias Em_callback_func = fn void();
+extern fn void emscripten_set_main_loop(Em_callback_func func, int fps, int simulate_infinite_loop);

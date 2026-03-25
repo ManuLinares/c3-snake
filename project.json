@@ -10,7 +10,13 @@
 		},
 		"web": {
 			"type": "prepare",
-			"exec":  [ "c3c build web_objs", "emcc ../build/obj/wasm32/snake.wasm ../lib/raylib.c3l/wasm32/libraylib.a -o ../build/index.html -s USE_GLFW=3 -s ASYNCIFY -O1 --shell-file ../minshell.html" ]
+			"exec": [
+				"c3c build web_objs",
+				"emcc -Oz ../build/obj/wasm32/snake.wasm ../lib/raylib.c3l/wasm32/libraylib.a -o ../build/index.html -s USE_GLFW=3 -sFILESYSTEM=0 --shell-file ../minshell.html"
+				// -sFILESYSTEM=0, we don't need filesystem for this simple snake game
+				// We don't use "-sASYNCIFY" here. To use a normal raylib game loop `while(!WindowShouldClose())`, we need to use asyncify
+				//   https://github.com/raysan5/raylib/wiki/Working-for-Web-(HTML5)#41-avoid-raylib-whilewindowshouldclose-loop
+			]
 		},
 		"web_objs": {
 			"type": "object-files",
@@ -20,5 +26,5 @@
 			"cc": "emcc"
 		}
 	},
-	"opt": "O1"
+	"opt": "Oz"
 }
