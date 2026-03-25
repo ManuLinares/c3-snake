@@ -2,7 +2,13 @@
 
 Snake game written in [C3](https://c3-lang.org) using [Raylib](https://www.raylib.com/).
 
-![C3 Snake Gameplay](preview.jpg)
+<p align="center">
+  <a href="https://manulinares.github.io/c3-snake/">
+	<img src="preview.jpg" alt="C3 Snake Gameplay">
+	<br>
+	<b>🚀 Click here to play in the browser! 🚀</b>
+  </a>
+</p>
 
 ## Build and Run
 
