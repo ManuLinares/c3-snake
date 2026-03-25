@@ -2,16 +2,17 @@ module snake;
 import raylib55;
 import std::math;
 
-const int TARGET_FPS       = 60;
-const int SQUARE_SIZE      = 32;
-const float MOVE_SPEED     = 0.15f;
-const int SCORE_PER_FRUIT  = 100;
-const int SCREEN_WIDTH     = 800;
-const int SCREEN_HEIGHT    = 450;
-const int SCREEN_COLS      = SCREEN_WIDTH / SQUARE_SIZE;
-const int SCREEN_ROWS      = SCREEN_HEIGHT / SQUARE_SIZE;
-const int SNAKE_LENGTH     = SCREEN_COLS * SCREEN_ROWS;
-const int INPUT_QUEUE_SIZE = 2;
+const int TARGET_FPS        = 60;
+const int SQUARE_SIZE       = 32;
+const float MOVE_SPEED      = 0.15f;
+const float MAX_FRAME_DELTA = 0.1f;
+const int SCORE_PER_FRUIT   = 100;
+const int SCREEN_WIDTH      = 800;
+const int SCREEN_HEIGHT     = 450;
+const int SCREEN_COLS       = SCREEN_WIDTH / SQUARE_SIZE;
+const int SCREEN_ROWS       = SCREEN_HEIGHT / SQUARE_SIZE;
+const int SNAKE_LENGTH      = SCREEN_COLS * SCREEN_ROWS;
+const int INPUT_QUEUE_SIZE  = 2;
 
 GameState g;
 
@@ -30,6 +31,7 @@ struct GameState @align(64)
 	bool game_over;
 	bool paused;
 	bool[SCREEN_COLS * SCREEN_ROWS] grid_occupied;
+	rl::RLRenderTexture2D target;
 }
 
 enum Direction : (Vec2 dir)
@@ -105,7 +107,9 @@ fn void update_game()
 		return;
 	}
 
+	if (!rl::is_window_focused()) g.paused = true;
 	if (rl::is_key_pressed(P)) g.paused = !g.paused;
+	if (rl::is_key_pressed(F)) rl::toggle_fullscreen();
 	if (g.paused) return;
 
 	if (rl::is_key_pressed(UP) || rl::is_key_pressed(W)) queue_move(UP);
@@ -113,7 +117,7 @@ fn void update_game()
 	if (rl::is_key_pressed(LEFT) || rl::is_key_pressed(A)) queue_move(LEFT);
 	if (rl::is_key_pressed(RIGHT) || rl::is_key_pressed(D)) queue_move(RIGHT);
 
-	g.move_timer += rl::get_frame_time();
+	g.move_timer += math::min(rl::get_frame_time(), MAX_FRAME_DELTA);
 
 	if (g.move_timer >= MOVE_SPEED)
 	{
@@ -177,8 +181,6 @@ fn void update_game()
 
 fn void draw_game()
 {
-	rl::begin_drawing();
-	defer rl::end_drawing();
 	rl::clear_background({ 15, 15, 20, 255 });
 
 	if (g.game_over)
@@ -249,13 +251,44 @@ fn void draw_game()
 fn void update_draw_frame()
 {
 	update_game();
+
+	rl::begin_texture_mode(g.target);
 	draw_game();
+	rl::end_texture_mode();
+
+	rl::begin_drawing();
+	defer rl::end_drawing();
+	rl::clear_background(rl::BLACK);
+
+	float screen_w = (float)rl::get_render_width();
+	float screen_h = (float)rl::get_render_height();
+	float scale = math::min(screen_w / (float)SCREEN_WIDTH, screen_h / (float)SCREEN_HEIGHT);
+
+	rl::draw_texture_pro(
+		g.target.texture,
+		{ 0.0f, 0.0f, (float)SCREEN_WIDTH, -(float)SCREEN_HEIGHT },
+		{
+			(screen_w - (float)SCREEN_WIDTH * scale) / 2.0f,
+			(screen_h - (float)SCREEN_HEIGHT * scale) / 2.0f,
+			(float)SCREEN_WIDTH * scale,
+			(float)SCREEN_HEIGHT * scale
+		},
+		{ 0.0f, 0.0f },
+		0.0f,
+		rl::WHITE
+	);
 }
 
 fn void main()
 {
+	$if !env::WASM:
+		rl::set_config_flags(rl::RLConfigFlag.WINDOW_RESIZABLE);
+	$endif
 	rl::init_window(SCREEN_WIDTH, SCREEN_HEIGHT, "C3 Snake");
 	init_game();
+
+	g.target = rl::load_render_texture(SCREEN_WIDTH, SCREEN_HEIGHT);
+	g.target.texture.set_filter(rl::RLTextureFilter.POINT);
 
 	$if env::WASM:
 		emscripten_set_main_loop(&update_draw_frame, 0, 1);
@@ -265,9 +298,9 @@ fn void main()
 		{
 			update_draw_frame();
 		}
+		rl::unload_render_texture(g.target);
+		rl::close_window();
 	$endif
-
-	rl::close_window();
 }
 
 alias Em_callback_func = fn void();
