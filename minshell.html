@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>C3 Snake</title>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=JetBrains+Mono&display=swap"
+		rel="stylesheet">
+	<style>
+		:root {
+			--bg: #0b0b0e;
+			--pink: #ff00ff;
+		}
+
+		body {
+			margin: 0;
+			overflow: hidden;
+			background: var(--bg);
+			font-family: 'Inter', sans-serif;
+			color: #fff;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			height: 100vh;
+		}
+
+		.game {
+			background: rgba(255, 255, 255, 0.03);
+			padding: 20px;
+			border-radius: 12px;
+			border: 1px solid rgba(255, 255, 255, 0.1);
+		}
+
+		.header {
+			display: flex;
+			justify-content: space-between;
+			align-items: baseline;
+			margin-bottom: 20px;
+		}
+
+		.header h1 {
+			margin: 0;
+			font-size: 20px;
+			background: linear-gradient(90deg, #00d2ff, #3a7bd5);
+			-webkit-background-clip: text;
+			-webkit-text-fill-color: transparent;
+		}
+
+		.controls {
+			font-size: 11px;
+			font-family: 'JetBrains Mono', monospace;
+			opacity: 0.4;
+			letter-spacing: 0.5px;
+		}
+
+		canvas {
+			display: block;
+			border-radius: 4px;
+			box-shadow: 0 0 30px rgba(0, 210, 255, 0.2);
+			outline: none;
+		}
+
+		#log {
+			margin-top: 15px;
+			font-family: 'JetBrains Mono', monospace;
+			font-size: 9px;
+			opacity: 0.1;
+			text-align: center;
+		}
+
+		.footer {
+			margin-top: 25px;
+			font-size: 11px;
+			opacity: 0.3;
+			text-transform: uppercase;
+			letter-spacing: 1px;
+		}
+
+		.footer a {
+			color: var(--pink);
+			text-decoration: none;
+			font-weight: 700;
+		}
+
+		.footer a:hover {
+			color: #ff6bff;
+			text-shadow: 0 0 8px var(--pink);
+		}
+	</style>
+</head>
+
+<body>
+	<div class="game">
+		<div class="header">
+			<h1>C3 SNAKE</h1>
+			<div class="controls">[ WASD or Arrow Keys ], P (PAUSE)</div>
+		</div>
+		<canvas id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
+		<div id="log"></div>
+	</div>
+
+	<div class="footer">
+		Built with <a href="https://c3-lang.org/" target="_blank">C3</a> & <a
+			href="https://github.com/raysan5/raylib/wiki/Working-for-Web-(HTML5)" target="_blank">Raylib</a>
+	</div>
+
+	<script>
+		var Module = {
+			print: function (text) {
+				console.log(text);
+				var log = document.getElementById('log');
+				if (log) log.innerText = text;
+			},
+			canvas: document.getElementById('canvas')
+		};
+	</script>
+	{{{ SCRIPT }}}
+</body>
+
+</html>

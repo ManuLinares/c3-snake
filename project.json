@@ -1,0 +1,24 @@
+{
+	"dependency-search-paths":  [ "lib" ],
+	"dependencies":  [ "raylib" ],
+	"sources":  [ "src/**" ],
+	"build-dir": "build",
+	"output": "build",
+	"targets": {
+		"snake": {
+			"type": "executable"
+		},
+		"web": {
+			"type": "prepare",
+			"exec":  [ "c3c build web_objs", "emcc ../build/obj/wasm32/snake.wasm ../lib/raylib.c3l/wasm32/libraylib.a -o ../build/index.html -s USE_GLFW=3 -s ASYNCIFY -O1 --shell-file ../minshell.html" ]
+		},
+		"web_objs": {
+			"type": "object-files",
+			"target": "wasm32",
+			"link-libc": true,
+			"single-module": true,
+			"cc": "emcc"
+		}
+	},
+	"opt": "O1"
+}

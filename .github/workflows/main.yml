@@ -1,0 +1,38 @@
+name: Deploy to Pages
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-slim
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install C3 Compiler
+        run: |
+          curl -L https://github.com/c3lang/c3c/releases/download/latest-prerelease-tag/c3-linux.tar.gz | tar xz
+          echo "$(pwd)/c3" >> $GITHUB_PATH
+
+      - name: Setup Emscripten (emsdk)
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: latest
+
+      - name: Build Web Target
+        run: c3c build web --trust=full
+
+      - name: Upload Artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: build/
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
