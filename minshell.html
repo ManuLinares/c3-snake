@@ -80,6 +80,37 @@
 		canvas:fullscreen { width: 100vw; height: 100vh; object-fit: contain; }
 		canvas:-webkit-full-screen { width: 100vw; height: 100vh; object-fit: contain; }
 
+		#overlay {
+			position: absolute;
+			top: 0; left: 0;
+			width: 100%; height: 100%;
+			background: rgba(0, 0, 0, 0.85);
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			z-index: 1000;
+			backdrop-filter: blur(10px);
+			cursor: pointer;
+		}
+
+		#overlay h2 {
+			font-size: 32px;
+			letter-spacing: 4px;
+			background: linear-gradient(90deg, #00d2ff, #3a7bd5);
+			-webkit-background-clip: text;
+			-webkit-text-fill-color: transparent;
+			margin: 0;
+		}
+
+		#overlay p {
+			margin-top: 10px;
+			font-size: 11px;
+			opacity: 0.4;
+			letter-spacing: 1px;
+			text-transform: uppercase;
+		}
+
 		#log {
 			margin-top: 15px;
 			font-family: 'JetBrains Mono', monospace;
@@ -110,10 +141,15 @@
 </head>
 
 <body>
+	<div id="overlay" onclick="startGame()">
+		<h2>READY TO PLAY?</h2>
+		<p>Click anywhere to start</p>
+	</div>
+
 	<div class="game">
 		<div class="header">
 			<h1>C3 SNAKE</h1>
-			<div class="controls">[ WASD or Arrow Keys ], P (PAUSE)</div>
+			<div class="controls">[ WASD or Arrow Keys ], P (PAUSE), F (FULLSCREEN)</div>
 		</div>
 		<canvas id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
 		<div id="log"></div>
@@ -125,6 +161,16 @@
 	</div>
 
 	<script>
+		function startGame() {
+			document.getElementById('overlay').style.display = 'none';
+			if (typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined') {
+				var context = new (window.AudioContext || window.webkitAudioContext)();
+				if (context.state === 'suspended') context.resume();
+			}
+			
+			if (Module._start_web_game) Module._start_web_game();
+		}
+
 		var Module = {
 			print: function (text) {
 				console.log(text);
@@ -132,7 +178,7 @@
 				if (log) log.innerText = text;
 			},
 			canvas: document.getElementById('canvas'),
-
+			
 			requestFullscreen: function(lockPointer, resizeCanvas) {
 				if (this.canvas.requestFullscreen) this.canvas.requestFullscreen();
 			}

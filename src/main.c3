@@ -32,6 +32,7 @@ struct GameState @align(64)
 	bool paused;
 	bool[SCREEN_COLS * SCREEN_ROWS] grid_occupied;
 	rl::RLRenderTexture2D target;
+	bool waiting_for_start;
 }
 
 enum Direction : (Vec2 dir)
@@ -102,6 +103,7 @@ fn void queue_move(Direction d)
 fn void update_game()
 {
 	if (rl::is_key_pressed(F)) rl::toggle_fullscreen();
+	if (g.waiting_for_start) return;
 
 	if (g.game_over)
 	{
@@ -169,6 +171,7 @@ fn void update_game()
 		{
 			g.tail_count = math::min(g.tail_count + 1, SNAKE_LENGTH);
 			g.fruit_active = false;
+			audio::play_eat();
 		}
 
 
@@ -287,6 +290,10 @@ fn void main()
 	$endif
 	rl::init_window(SCREEN_WIDTH, SCREEN_HEIGHT, "C3 Snake");
 	init_game();
+	$if env::WASM:
+		g.waiting_for_start = true;
+	$endif
+	audio::init();
 
 	g.target = rl::load_render_texture(SCREEN_WIDTH, SCREEN_HEIGHT);
 	g.target.texture.set_filter(POINT);
@@ -302,6 +309,13 @@ fn void main()
 		rl::unload_render_texture(g.target);
 		rl::close_window();
 	$endif
+
+	audio::deinit();
+}
+
+fn void start_web_game() @export("start_web_game")
+{
+	g.waiting_for_start = false;
 }
 
 alias Em_callback_func = fn void();
