@@ -74,7 +74,11 @@
 			border-radius: 4px;
 			box-shadow: 0 0 30px rgba(0, 210, 255, 0.2);
 			outline: none;
+			image-rendering: pixelated;
 		}
+
+		canvas:fullscreen { width: 100vw; height: 100vh; object-fit: contain; }
+		canvas:-webkit-full-screen { width: 100vw; height: 100vh; object-fit: contain; }
 
 		#log {
 			margin-top: 15px;
@@ -127,7 +131,11 @@
 				var log = document.getElementById('log');
 				if (log) log.innerText = text;
 			},
-			canvas: document.getElementById('canvas')
+			canvas: document.getElementById('canvas'),
+
+			requestFullscreen: function(lockPointer, resizeCanvas) {
+				if (this.canvas.requestFullscreen) this.canvas.requestFullscreen();
+			}
 		};
 	</script>
 	{{{ SCRIPT }}}

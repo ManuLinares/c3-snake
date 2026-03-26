@@ -101,15 +101,16 @@ fn void queue_move(Direction d)
 
 fn void update_game()
 {
+	if (rl::is_key_pressed(F)) rl::toggle_fullscreen();
+
 	if (g.game_over)
 	{
-		if (rl::get_key_pressed() != 0) init_game();
+		if (rl::get_key_pressed() != 0 && !rl::is_key_pressed(F)) init_game();
 		return;
 	}
 
 	if (!rl::is_window_focused()) g.paused = true;
 	if (rl::is_key_pressed(P)) g.paused = !g.paused;
-	if (rl::is_key_pressed(F)) rl::toggle_fullscreen();
 	if (g.paused) return;
 
 	if (rl::is_key_pressed(UP)    || rl::is_key_pressed(W)) queue_move(UP);
