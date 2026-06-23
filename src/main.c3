@@ -107,7 +107,7 @@ fn void update_game()
 
 	if (g.game_over)
 	{
-		if (rl::get_key_pressed() != 0 && !rl::is_key_pressed(F)) init_game();
+		if (rl::get_key_pressed() != RLKeyboardKey.NONE && !rl::is_key_pressed(F)) init_game();
 		return;
 	}
 

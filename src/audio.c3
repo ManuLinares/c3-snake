@@ -139,7 +139,7 @@ fn void init()
 	const uint DEFAULT_SAMPLE_RATE = 44100;
 	const uint EAT_FRAME_COUNT     = DEFAULT_SAMPLE_RATE / 15;
 
-	float* sound_samples = (float*)rl::mem_alloc(EAT_FRAME_COUNT * float.sizeof);
+	float* sound_samples = (float*)rl::mem_alloc(EAT_FRAME_COUNT * float::size);
 
 	const float PI = (float)math::PI;
 	for (uint i = 0; i < EAT_FRAME_COUNT; i++)
