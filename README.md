@@ -13,7 +13,7 @@ Snake game written in [C3](https://c3-lang.org) using [Raylib](https://www.rayli
 ## Build and Run
 
 ```sh
-c3c run snake
+c3c run
 ```
 
 ### Web (Emscripten)
