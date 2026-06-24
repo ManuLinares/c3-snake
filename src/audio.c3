@@ -1,5 +1,5 @@
 module snake::audio;
-import raylib55;
+import raylib6;
 import std::math::nolibc;
 
 RLSound eat_sound;
@@ -29,7 +29,8 @@ fn void audio_callback(void* data, uint frames)
 		int bar_in_phrase = current_bar_index % 4;
 		int current_phrase_index = current_bar_index / 4;
 		int current_step_in_bar = current_step % 16;
-		float current_step_time = nolibc::fmodf(global_time, STEP_TIME);
+		//float current_step_time = nolibc::fmodf(global_time, STEP_TIME);
+		float current_step_time = global_time % STEP_TIME;
 
 		if (current_bar_index != last_checked_bar)
 		{

@@ -16,7 +16,7 @@ Snake game written in [C3](https://c3-lang.org) using [Raylib](https://www.rayli
 c3c run snake
 ```
 
-### Web (WASM)
+### Web (Emscripten)
 ```sh
 # Requires emscripten (emcc)
 c3c build web --trust=full

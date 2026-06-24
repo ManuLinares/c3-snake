@@ -1,5 +1,5 @@
 module snake;
-import raylib55;
+import raylib6;
 import std::math;
 
 const int TARGET_FPS        = 60;

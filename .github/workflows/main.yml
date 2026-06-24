@@ -1,41 +1,92 @@
-name: Deploy to Pages
+name: Deploy to Pages and Release Binaries
 
 on:
   push:
     branches: [ main ]
+    tags: [ 'v*' ]
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
 jobs:
   build-and-deploy:
-    runs-on: ubuntu-slim
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-
-      - name: Install C3 Compiler
-        run: |
-          curl -L --fail --retry 600 --retry-delay 10 https://github.com/c3lang/c3c/releases/download/latest-prerelease-tag/c3-linux.tar.gz | tar xz
-          echo "$(pwd)/c3" >> $GITHUB_PATH
+      - name: Checkout repository
+        uses: actions/checkout@v7
 
       - name: Setup Emscripten (emsdk)
-        uses: mymindstorm/setup-emsdk@v14
+        uses: mymindstorm/setup-emsdk@v16
         with:
           version: latest
+
+      - name: Setup C3 Compiler
+        uses: ManuLinares/setup-c3@main
+        with:
+          version: nightly
+          build-type: release
 
       - name: Build Web Target
         run: c3c build web --trust=full
 
-      - name: Copy Assets
-        run: cp preview.jpg build/
+      - name: Organize Web Assets
+        run: |
+          mkdir -p dist_web
+          cp build/index.html dist_web/
+          cp build/index.js dist_web/
+          cp build/index.wasm dist_web/
+          cp preview.jpg dist_web/ || true
 
-      - name: Upload Artifact
-        uses: actions/upload-pages-artifact@v4
+      - name: Fetch Windows SDK for Cross-Compilation
+        run: c3c fetch-sdk windows --accept-license
+
+      - name: Install Linux dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libx11-dev \
+            libxrandr-dev \
+            libxinerama-dev \
+            libxi-dev \
+            libxxf86vm-dev \
+            libxcursor-dev
+
+      - name: Build Linux Target
+        run: c3c build linux -O4 -g0 -z "-s"
+
+      - name: Build Windows Target
+        run: c3c build windows -O4 -g0 -z "-s"
+
+      - name: Organize Release Binaries
+        run: |
+          mkdir -p dist_release
+          cp build/snake dist_release/snake-linux
+          cp build/snake.exe dist_release/snake-windows.exe
+
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v5
         with:
-          path: build/
+          path: dist_web/
 
       - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v4
+        if: github.ref == 'refs/heads/main'
+        uses: actions/deploy-pages@v5
+
+      # 4. Handle Release Creation (only when a tag is pushed)
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ github.ref_name }}" \
+            dist_release/snake-linux \
+            dist_release/snake-windows.exe \
+            --title "${{ github.ref_name }}" \
+            --generate-notes || \
+          gh release upload "${{ github.ref_name }}" \
+            dist_release/snake-linux \
+            dist_release/snake-windows.exe \
+            --clobber

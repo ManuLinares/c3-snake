@@ -1,33 +1,29 @@
 {
-	"dependency-search-paths":  [ "lib" ],
-	"dependencies":  [ "raylib" ],
-	"sources":  [ "src/**" ],
-	"build-dir": "build",
-	"output": "build",
-	"features": ["C3_MATH"],
-	"targets": {
-		"snake": {
-			"type": "executable"
-		},
-		"web": {
-			"type": "prepare",
-			"exec": [
-				"c3c build web_objs -vv",
-				"emcc -Oz ../build/obj/wasm32/snake.wasm ../lib/raylib.c3l/wasm32/libraylib.a -o ../build/index.html -s USE_GLFW=3 -s FILESYSTEM=0 -s EXPORTED_RUNTIME_METHODS=['HEAPF32'] --shell-file ../minshell.html"
-				// -sFILESYSTEM=0, we don't need filesystem for this simple snake game
-				// We don't use "-sASYNCIFY" here. To use a normal raylib game loop `while(!WindowShouldClose())`, we need to use asyncify
-				//   https://github.com/raysan5/raylib/wiki/Working-for-Web-(HTML5)#41-avoid-raylib-whilewindowshouldclose-loop
-				// -sEXPORTED_RUNTIME_METHODS=['HEAPF32'] is for raylib sound to work
-			]
-		},
-		"web_objs": {
-			"type": "object-files",
-			"target": "wasm32",
-			"link-libc": true,
-			"single-module": true,
-			"cc": "emcc",
-			"link-args": ["-Oz"]
-		}
-	},
-	"opt": "Oz"
+  "dependency-search-paths":  [ "lib" ],
+  "dependencies":  [ "raylib6" ],
+  "sources":  [ "src/**" ],
+  "build-dir": "build",
+  "output": "build",
+  "targets": {
+    "linux": {
+      "name": "snake",
+      "type": "executable"
+    },
+    "windows": {
+      "name": "snake",
+      "target": "windows-x64",
+      "type": "executable"
+    },
+    "web": {
+      "type": "executable",
+      "name": "index.html",
+      "target": "emscripten",
+      "link-args": [
+        "-sUSE_GLFW=3",
+        "-sEXPORTED_RUNTIME_METHODS=['HEAPF32']",
+        "--shell-file minshell.html"
+      ]
+    }
+  },
+  "opt": "Oz"
 }
